@@ -5,38 +5,59 @@ import Task from "./Task";
 type TodoListPropsType = {
     title: string;
     tasks: Array<TaskType>;
+    filter: FilterValuesType;
     removeTask: (taskId: string) => void;
     changeFilter: (nextFilter: FilterValuesType) => void;
+    changeTaskStatus:(taskId: string, isDone: boolean) => void
     addTask: (taskTitle: string) => void;
 };
 
 const TodoList: React.FC<TodoListPropsType> = ({
     title,
     tasks,
+    filter,
     removeTask,
     changeFilter,
     addTask,
+    changeTaskStatus
 }) => {
-    const [newTaskTitle, setNewTaskTitle] = useState("");
-    const isAddTaskPossible = !!newTaskTitle
+    const [newTaskTitle, setNewTaskTitle] = useState("")
+    const [emptyValueError, setEmptyValueError] = useState(false)
+    const isAddTaskPossible = Boolean(newTaskTitle)
     const tasksComponents: JSX.Element = tasks.length
         ? <ul>
-            {tasks.map((t) => <Task {...t} removeTask={removeTask} />)}
+            {tasks.map((t) => <Task
+                {...t}
+                removeTask={removeTask}
+                changeTaskStatus={changeTaskStatus}
+            />)}
         </ul>
         : <span>Your taskslist is empty</span>
 
     const changeFilterOnClickHandlerCreator =
         (nextFilter: FilterValuesType): (() => void) => () => changeFilter(nextFilter);
 
-    const onClickAddtaskHandler = () => {
+    const onClickAddTaskHandler = () => {
         if (isAddTaskPossible) {
-            addTask(newTaskTitle)
+            const trimmedTitle = newTaskTitle.trim()
+            if(trimmedTitle){
+                addTask(trimmedTitle)
+            } else {
+                setEmptyValueError(true)
+            }
             setNewTaskTitle("")
         } 
     }
-    const onChangeSetLocalTitleHandler = (e: ChangeEvent<HTMLInputElement>) => setNewTaskTitle(e.currentTarget.value)
+    const onChangeSetLocalTitleHandler = (e: ChangeEvent<HTMLInputElement>) => {
+        if(!newTaskTitle.trim()){
+            setEmptyValueError(true)
+        } else {
+            emptyValueError && setEmptyValueError(false)
+        }
+        setNewTaskTitle(e.currentTarget.value)
+    }
     const onKeyDownAddTaskHandler = (e: KeyboardEvent<HTMLInputElement>) => {
-        e.key === "Enter" && onClickAddtaskHandler()
+        e.key === "Enter" && onClickAddTaskHandler()
     }
     
     return (
@@ -47,18 +68,28 @@ const TodoList: React.FC<TodoListPropsType> = ({
                     value={newTaskTitle}
                     onChange={onChangeSetLocalTitleHandler}
                     onKeyDown={onKeyDownAddTaskHandler}
+                    className={emptyValueError ? "empty-value-error" : "" }
                 />
                 <button
                     disabled={!isAddTaskPossible}
-                    onClick={onClickAddtaskHandler}>+</button>
+                    onClick={onClickAddTaskHandler}>+</button>
+               <div style={{color: emptyValueError ? "red" : "black"}}>Please, enter title</div>
             </div>
             {tasksComponents}
             <div>
-                <button onClick={() => changeFilter("all")}>All</button>
-                <button onClick={changeFilterOnClickHandlerCreator("active")}>
+                <button
+                    className={filter === "all" ? "btn-filter-active" : "btn-filter"}
+                    onClick={() => changeFilter("all")}>
+                    All
+                </button>
+                <button
+                    className={filter === "active" ? "btn-filter-active" : "btn-filter"}
+                    onClick={changeFilterOnClickHandlerCreator("active")}>
                     Active
                 </button>
-                <button onClick={changeFilterOnClickHandlerCreator("completed")}>
+                <button
+                    className={filter === "completed" ? "btn-filter-active" : "btn-filter"}
+                    onClick={changeFilterOnClickHandlerCreator("completed")}>
                     Completed
                 </button>
             </div>

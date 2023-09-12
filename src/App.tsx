@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
-import TodoList from './TodoList';
+import TodoList from './Todolist';
 
 
 //CRUD
@@ -12,7 +12,7 @@ export type TaskType = {
 }
 export type FilterValuesType = "all"|"active"|"completed"
 
-function App() {
+function App(): JSX.Element {
     // BLL:
     const todoListTitle = "What to learn"
    
@@ -26,7 +26,7 @@ function App() {
     const removeTask = (taskId: string): void => {
         const filteredTasks = tasks.filter(t => t.id !== taskId)
         setTasks(filteredTasks)
-    }
+    }  // D
     const addTask = (taskTitle: string) => {
         const newTask: TaskType = {
             id: crypto.randomUUID(),
@@ -34,7 +34,18 @@ function App() {
             isDone: false
         }
         setTasks([...tasks, newTask])
+    }  // C
+    const changeTaskStatus = (taskId: string, isDone: boolean) => {
+        setTasks(tasks.map(t => t.id === taskId ? {...t, isDone: isDone} : t))
     }
+    const changeTaskTitle = (taskId: string, title: string) => {
+
+
+    }
+
+
+
+
     const changeFilter = (nextFilter: FilterValuesType) => {
         setFilter(nextFilter)
     }
@@ -53,10 +64,12 @@ function App() {
     return (
         <div className="App">
             <TodoList
+                filter={filter}
                 title={todoListTitle}
                 tasks={tasksForRender}
                 removeTask={removeTask}
                 changeFilter={changeFilter}
+                changeTaskStatus={changeTaskStatus}
                 addTask={addTask}
             />
         </div>
